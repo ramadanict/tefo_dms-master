@@ -1,0 +1,333 @@
+<div class="dashboard-wrapper">
+	<div class="container-fluid  dashboard-content">
+		<div class="row">
+			<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+				<div class="card">
+					<h5 class="card-header">List of Documents <?php $role = $this->session->userdata('role');
+																if ($role == 4) { ?><a href="<?php echo base_url('kebelebulkupload') ?>" class="btn btn-sm btn-outline-success pull-right float-right"><i class="fa fa-upload"></i> Bulk Upload Document</a><?php } ?></h5>
+					<div class="card-body">
+						<form action="<?php echo base_url('kebele-manage-documents') ?>" method="get" style="font-size: 23px;">
+							<div class="card">
+								<div class="card-body bg-info-light">
+									<div class="row">
+
+										<div class="col col-md col-4">
+											<label style="color: black;">Full Name</label>
+											<input style="font-family: Serif; outline: none;height: 40px;" type="text" name="full_name" placeholder="Full Name(Dej...)" class="form-control" />
+										</div>
+										<div class="col col-md col-3">
+											<label style="color: black;">Carta Number</label>
+											<input type="text" style="font-family: Serif; outline: none;height: 40px;" name="carta_number" placeholder="Carta Number(233-456-679)" class="form-control" />
+										</div>
+										<div class="col col-md-3">
+											<label><br><br><br></label>
+											<input class="btn btn-sm btn-primary" name="submit" value="Search" type="submit">
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</form>
+						<h5 style="font-family: Chilanka; font-size: 20px;">Result: <?= $total_rows; ?> In Time of
+							<?php echo $this->benchmark->elapsed_time(); ?> ms
+						</h5>
+						<hr>
+						<table class="table table-bordered table-responsive">
+							<thead>
+								<tr>
+									<th scope="col">No</th>
+									<th style="width: 300px" scope="col">Full Name </th>
+									<th style="width: 200px" scope="col">City</th>
+									<th style="width: 200px" scope="col">Kebele</th>
+									<th style="width: 200px" scope="col">Carta Number</th>
+									<th style="width: 200px" scope="col">Document Status</th>
+									<th style="width: 200px" scope="col">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php if (empty($documents)) : ?>
+									<tr>
+										<td colspan="10">
+											<div class="alert alert-danger" role="alert">
+												No Data Found in <?php echo $this->session->userdata('kebele') ?> kebele!
+											</div>
+										</td>
+									</tr>
+								<?php endif ?>
+								<?php $no = 0;
+								foreach ($documents	as $document) :	$no++; ?>
+									<tr>
+										<th scope="row"><?= $no; ?></th>
+										<td style="width: 300px;font-family: Serif;color: black;font-size: 17px;">
+											<?= $document->first_name . ' ' . $document->middle_name . ' ' . $document->last_name; ?></td>
+										<td style="width: 200px"><?= $document->city; ?></td>
+										<td style="width: 100px"><?= $document->kebele; ?></td>
+										<td style="width: 100px"><?= $document->carta_number; ?></td>
+										<td style="width: 100px"><?= $document->service_status; ?></td>
+
+										<td style="width: 250px;">
+											<?php $role = $this->session->userdata('role');
+											$status = $document->request_document_status;
+											$is_Approved = $document->is_request_approved;
+											// echo $status;
+											$requested_by = $document->requested_by;
+											$loggedUser = $this->session->userdata('username');
+											if ($role == 5 and $status == 0) {
+											?>
+												<a href="#" data-toggle="modal" data-target="#RequestDocument<?php echo $document->carta_number; ?>" data-toggle="tooltip" data-placement="top" title="" data-original-title="Attach Document" class="btn btn-sm btn-info">
+													<i class="fas fa-question"></i>Request Document </a>
+											<?php } else if ($role == 5 and $status == 1) { ?>
+												<a href="#" data-toggle="modal" data-target="#RequestDocumentWaiting<?php echo $document->carta_number; ?>" data-toggle="tooltip" data-placement="top" title="" data-original-title="Attach Document" class="btn btn-sm btn-warning">
+													<i class="fa fa-folder"></i>Request Waiting </a>
+											<?php }
+											if ($role == 4 and $is_Approved == 1) {
+											?>
+												<a href="#" data-toggle="modal" data-target="#RequestDocumentWaiting<?php echo $document->carta_number; ?>" data-toggle="tooltip" data-placement="top" title="" data-original-title="Attach Document" class="btn btn-sm btn-warning">
+													<i class="fa fa-folder"></i>Approved Request </a>
+											<?php
+											}
+											if ($role == 4 and $status == 1 and $is_Approved == 0 ) {
+											?>
+												<a href="#" data-toggle="modal" data-target="#RequestDocumentWaiting<?php echo $document->carta_number; ?>" data-toggle="tooltip" data-placement="top" title="" data-original-title="Attach Document" class="btn btn-sm btn-warning">
+													<i class="fa fa-folder"></i>Request Waiting </a>
+											<?php
+											} else if ($role == 5 and $is_Approved == 1 and $status == 2 and $requested_by == $loggedUser) {
+											?>
+												</td>
+									<?php } ?>
+									<!--	Request Document 
+
+										Attach file Modal popu  -->
+									<div class="modal fade" id="RequestDocument<?php echo $document->carta_number; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+										<div class="modal-dialog modal-lg" role="document">
+											<div class="modal-content" style="width: 900px;">
+												<div class="modal-header">
+													<h5 class="modal-title" id="exampleModalLabel">Document Detail Access Request Form</h5>
+													<a href="#" class="close" data-dismiss="modal" aria-label="Close">
+														<span aria-hidden="true">&times;</span>
+													</a>
+												</div>
+												<div class="modal-body">
+													<div class="card">
+														<div class="card-body bg-info">
+															<h3 class="card-title">Request Document for Accessing cusotmer<br>
+																<span class="text text-danger"><u>
+																		<?php echo $document->first_name . ' ' . $document->middle_name . ' ' . $document->last_name ?></u></span>
+															</h3>
+														</div>
+														<form action="<?php echo base_url('request-access-document/' . $document->carta_number) ?>" method="post" enctype="multipart/form-data">
+															<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+																<br>
+																<label for="validationCustom01" style="font-size: 20px; color: black">Choose End Date </label>
+																<input required type="date" name="end_date" class="form-control">
+																<small><?php if (isset($error)) {
+																			echo $error;
+																		} ?></small>
+															</div>
+
+															<div class="card-footer p-0 text-center d-flex justify-content-center">
+																<div class="card-footer-item card-footer-item-bordered">
+																	<!--																<a href="#" class="card-link">Card link</a>-->
+																</div>
+																<div class="card-footer-item card-footer-item-bordered">
+																	<!--																<a href="#" class="card-link">Another link</a>-->
+																</div>
+															</div>
+													</div>
+													<p style="color:red;"> Get ready access you must request this document Are you sure want access this Document ?</p><br>
+
+												</div>
+												<div class="modal-footer float-left">
+													<button type="submit" class="btn btn-lg btn-warning">Yes</button>
+													<a href="#" class="btn btn-secondary" data-dismiss="modal">No</a>
+												</div>
+											</div>
+											</form>
+										</div>
+									</div>
+									<?php if ($role == 4) { ?>
+										<div class="modal fade" id="RequestDocumentWaiting<?php echo $document->carta_number; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+											<div class="modal-dialog modal-lg" role="document">
+												<div class="modal-content" style="width: 900px;">
+													<div class="modal-header">
+														<h5 class="modal-title" id="exampleModalLabel">Document Detail Access Request Form</h5>
+														<a href="#" class="close" data-dismiss="modal" aria-label="Close">
+															<span aria-hidden="true">&times;</span>
+														</a>
+													</div>
+													<div class="modal-body">
+														<div class="card">
+															<div class="card-body bg-info">
+																<h3 class="card-title">Waiting Document Accessing <br>
+																	<span class="text text-danger"><u>
+																			<?php echo $document->first_name . ' ' . $document->middle_name . ' ' . $document->last_name ?></u></span>
+																</h3>
+															</div>
+															<form action="<?php echo base_url('request-approve-document/' . $document->carta_number) ?>" method="post" enctype="multipart/form-data">
+																<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+																	<br>
+																	<label for="validationCustom01" style="font-size: 20px; color: black">Request history </label>
+																	<p style="color:black">Requested Date: <span style="color: red;font-style:italic"><?php echo $document->request_date ?></span></p>
+																	<p style="color:black">Requested End Date: <span style="color: red;font-style:italic"><?php echo $document->end_request_date ?></span></p>
+																	<p style="color:black">Requested By: <span style="color: red;font-style:italic"><?php echo $document->requested_by ?></span></p>
+																	<p style="color:black">Requested Office: <span style="color: red;font-style:italic"><?php echo $document->requested_office ?></span></p>
+
+																</div>
+														</div>
+
+														<div class="modal-footer float-left">
+															<button type="submit" class="btn btn-lg btn-warning">Approved</button>
+															<a href="#" class="btn btn-secondary" data-dismiss="modal">No</a>
+														</div>
+
+													</div>
+													</form>
+												</div>
+											</div>
+										</div>
+									<?php } else if ($role == 5) { ?>
+										<div class="modal fade" id="RequestDocumentWaiting<?php echo $document->carta_number; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+											<div class="modal-dialog modal-lg" role="document">
+												<div class="modal-content" style="width: 900px;">
+													<div class="modal-header">
+														<h5 class="modal-title" id="exampleModalLabel">Document Detail Access Request Form</h5>
+														<a href="#" class="close" data-dismiss="modal" aria-label="Close">
+															<span aria-hidden="true">&times;</span>
+														</a>
+													</div>
+													<div class="modal-body">
+														<div class="card">
+															<div class="card-body bg-info">
+																<h3 class="card-title">Waiting Document Accessing <br>
+																	<span class="text text-danger"><u>
+																			<?php echo $document->first_name . ' ' . $document->middle_name . ' ' . $document->last_name ?></u></span>
+																</h3>
+															</div>
+															<form action="<?php echo base_url('request-approve-document/' . $document->carta_number) ?>" method="post" enctype="multipart/form-data">
+																<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+																	<br>
+																	<label for="validationCustom01" style="font-size: 20px; color: black">Request history </label>
+																	<p style="color:black">Requested Date: <span style="color: red;font-style:italic"><?php echo $document->request_date ?></span></p>
+																	<p style="color:black">Requested End Date: <span style="color: red;font-style:italic"><?php echo $document->end_request_date ?></span></p>
+																	<p style="color:black">Requested By: <span style="color: red;font-style:italic"><?php echo $document->requested_by ?></span></p>
+																	<p style="color:black">Requested Office: <span style="color: red;font-style:italic"><?php echo $document->requested_office ?></span></p>
+																</div>
+														</div>
+														<div class="modal-footer float-left">
+															<a href="#" class="btn btn-secondary" data-dismiss="modal">Close</a>
+														</div>
+													</div>
+													</form>
+												</div>
+											</div>
+										</div>
+									<?php } ?>
+									<!--	End Request Documents -->
+									<!---Attach file Modal popu  -->
+									<div class="modal fade" id="exampleModalAdd<?php echo $document->carta_number; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+										<div class="modal-dialog modal-lg" role="document">
+											<div class="modal-content" style="width: 900px;">
+												<div class="modal-header">
+													<h5 class="modal-title" id="exampleModalLabel">Document Detail Description</h5>
+													<a href="#" class="close" data-dismiss="modal" aria-label="Close">
+														<span aria-hidden="true">&times;</span>
+													</a>
+												</div>
+												<div class="modal-body">
+													<div class="card">
+														<div class="card-body bg-info">
+															<h3 class="card-title">Attach Document for <span class="text text-danger"><u>
+																		<?php echo $document->first_name . '' . $document->middle_name . '' . $document->last_name ?></u></span></h3>
+														</div>
+														<form action="<?php echo base_url('kebele-attach-document/' . $document->carta_number) ?>" method="post" enctype="multipart/form-data">
+															<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+																<br>
+																<label for="validationCustom01" style="font-size: 20px; color: black">Document(PDF/Image) File</label>
+
+																<input type="file" name="document_file" class="form-control" placeholder="eg.(2099,2100)" required="">
+																<small><?php if (isset($error)) {
+																			echo $error;
+																		} ?></small>
+															</div>
+															<div class="card-footer p-0 text-center d-flex justify-content-center">
+																<div class="card-footer-item card-footer-item-bordered">
+																	<!--																<a href="#" class="card-link">Card link</a>-->
+																</div>
+																<div class="card-footer-item card-footer-item-bordered">
+																	<!--																<a href="#" class="card-link">Another link</a>-->
+																</div>
+															</div>
+													</div>
+												</div>
+												<div class="modal-footer float-left">
+													<button type="submit" class="btn btn-lg btn-warning">Attach</button>
+													<a href="#" class="btn btn-secondary" data-dismiss="modal">Close</a>
+												</div>
+											</div>
+											</form>
+										</div>
+									</div>
+									<div class="modal fade" id="exampleModal<?php echo $document->document_info; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+										<div class="modal-dialog modal-lg" role="document">
+											<div class="modal-content" style="width: 900px;">
+												<div class="modal-header">
+													<h5 class="modal-title" id="exampleModalLabel">Document Detail Description</h5>
+													<a href="#" class="close" data-dismiss="modal" aria-label="Close">
+														<span aria-hidden="true">&times;</span>
+													</a>
+												</div>
+												<div class="modal-body">
+
+													<div class="card">
+														<div class="card-body bg-info">
+															<h3 class="card-title">Detail Persona Info of Document</h3>
+														</div>
+														<ul class="list-group list-group-flush" style="font-size: 25px;color: black;">
+															<li class="list-group-item">Full Name:<u> <?php echo $document->first_name . ' ' . $document->middle_name . ' ' . $document->last_name ?></u></li>
+															<li class="list-group-item">Carta Number:<u> <?php echo $document->carta_number ?></u></li>
+															<li class="list-group-item">Magaalaa <u><?= $document->city; ?>/<?php echo $document->kebele ?></u></li>
+														</ul>
+														<div class="card-footer p-0 text-center d-flex justify-content-center">
+															<div class="card-footer-item card-footer-item-bordered">
+																<!--																<a href="#" class="card-link">Card link</a>-->
+															</div>
+															<div class="card-footer-item card-footer-item-bordered">
+																<!--																<a href="#" class="card-link">Another link</a>-->
+															</div>
+														</div>
+													</div>
+													<?php
+													foreach ($this->dcm->getUserDocuments($document->carta_number) as $udoc) {
+														// echo	$document->document_info;
+													?>
+														<p>
+															<!-- ===============Multiple Document========== -->
+															<embed src="<?php echo base_url() ?>document/kebele<?php echo $udoc->kebele . '/' . $document->carta_number . '/' . $udoc->file_name; ?>" frameborder="0" width="800px;" height="600px">
+														</p>
+													<?php
+													}
+													?>
+
+												</div>
+												<div class="modal-footer">
+													<a href="#" class="btn btn-secondary" data-dismiss="modal">Close</a>
+												</div>
+											</div>
+										</div>
+									</div>
+					</div>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+				</table>
+
+				<div class="row">
+					<div class="col-md-12 text-center">
+						<p class="pagination"><?php echo $pagination; ?></p>
+					</div>
+				</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
